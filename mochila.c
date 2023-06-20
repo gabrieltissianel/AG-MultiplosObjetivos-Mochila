@@ -78,6 +78,49 @@ int buscarIndividuoMenorDominancia(Individuo *populacao, int posicao, int tamanh
     return posicao_melhor_individuo;
 }
 
+void ordenarPorMenorDominancia(Individuo *populacao, int inicio, int tamanho_populacao){
+    int posicao_melhor_individuo;
+    for (int i = inicio + 1; i < tamanho_populacao; i++){
+        posicao_melhor_individuo = buscarIndividuoMenorDominancia(populacao, i, tamanho_populacao);
+        trocarIndividuos(&(populacao[posicao_melhor_individuo]), &(populacao[i]));
+    }
+}
+
+int buscarMaiorNumeroVetorFloat(int inicio, int tamanho_populacao, float *vetor){
+    int posicao_melhor_individuo = inicio;
+    for (int i = inicio + 1; i < tamanho_populacao; i++){
+        if (vetor[i] > vetor[posicao_melhor_individuo]){
+            posicao_melhor_individuo = i;
+        }   
+    }
+    return posicao_melhor_individuo;
+}
+
+int buscarMenorNumeroVetorFloat(int inicio, int tamanho_populacao, float *vetor){
+    int posicao_melhor_individuo = inicio;
+    for (int i = inicio + 1; i < tamanho_populacao; i++){
+        if (vetor[i] < vetor[posicao_melhor_individuo]){
+            posicao_melhor_individuo = i;
+        }   
+    }
+    return posicao_melhor_individuo;
+}
+
+//ordenacao usando valores do vetor float para ordenar a populacao
+void ordenarComBaseNoVetorFloat(Individuo *populacao, int inicio, int tamanho_populacao, float *vetor, int (*tipoDeOrdenacao) (int, int, float*)){
+    int posicao_melhor_individuo, posicao_vetor;
+    float temp;
+    for (int i = inicio; i < tamanho_populacao; i++){
+        posicao_vetor = tipoDeOrdenacao(i - inicio, tamanho_populacao - inicio, vetor);
+
+        //ordena vetor indivíduos
+        trocarIndividuos(&(populacao[posicao_vetor + inicio]), &(populacao[i]));
+
+        //ordenar vetor float
+        trocarFloats(&(vetor[i-inicio]), &(vetor[posicao_melhor_individuo - inicio]));
+    }
+}
+
 int buscarIndividuoMenorVariavel(Individuo *populacao, int posicao, int final_da_frente, int variavel){
     int posicao_melhor_individuo = posicao;
     for (int i = posicao + 1; i < final_da_frente; i++){
@@ -98,58 +141,16 @@ int buscarIndividuoMaiorVariavel(Individuo *populacao, int posicao, int final_da
     return posicao_melhor_individuo;
 }
 
-// selection sort é mais modular agora, ponteiro para funcao como argumento para escolher por qual atributo será ordenado a população
-// argumentos inicio e fim decidem a parte do vetor a ser ordenado, são usados para calculo de distancia
-void selectionSort(Individuo *populacao, int inicio, int tamanho_populacao, int (*tipoDeOrdenacao) (Individuo*, int, int)){
-    int posicao_melhor_individuo;
-    for (int i = inicio; i < tamanho_populacao; i++){
-        posicao_melhor_individuo = tipoDeOrdenacao(populacao, i, tamanho_populacao);
-        trocarIndividuos(&(populacao[posicao_melhor_individuo]), &(populacao[i]));
-    }
-}
-
-int buscarMaiorNumeroVetorFloat(int inicio, int tamanho_populacao, float *vetor){
-    int posicao_melhor_individuo = inicio;
-    for (int i = inicio; i < tamanho_populacao; i++){
-        if (vetor[i] > vetor[posicao_melhor_individuo]){
-            posicao_melhor_individuo = i;
-        }   
-    }
-    return posicao_melhor_individuo;
-}
-
-int buscarMenorNumeroVetorFloat(int inicio, int tamanho_populacao, float *vetor){
-    int posicao_melhor_individuo = inicio;
-    for (int i = inicio; i < tamanho_populacao; i++){
-        if (vetor[i] < vetor[posicao_melhor_individuo]){
-            posicao_melhor_individuo = i;
-        }   
-    }
-    return posicao_melhor_individuo;
-}
-
-//ordenacao usando valores do vetor float para ordenar a populacao
-void ordenarComBaseNoVetorFloat(Individuo *populacao, int inicio, int tamanho_populacao, float *vetor, int (*tipoDeOrdenacao) (int, int, float*)){
-    int posicao_melhor_individuo, posicao_vetor;
-    float temp;
-    for (int i = inicio; i < tamanho_populacao; i++){
-        posicao_vetor = tipoDeOrdenacao(i - inicio, tamanho_populacao - inicio, vetor);
-        posicao_melhor_individuo = inicio + posicao_vetor;
-        //ordena vetor indivíduos
-        trocarIndividuos(&(populacao[posicao_melhor_individuo]), &(populacao[i]));
-        //ordenar vetor float
-        trocarFloats(&(vetor[i-inicio]), &(vetor[posicao_melhor_individuo - inicio]));
-    }
-}
-
 // ordena a populacao e o vetor float de acordo com os indices da populacao
 void ordenarVetorFloatJuntoComPopulacao(Individuo *populacao, int inicio, int tamanho_populacao, float *vetor, int variavel, int (*tipoDeOrdenacao) (Individuo*, int, int, int)){
     int posicao_melhor_individuo;
     float temp;
     for (int i = inicio; i < tamanho_populacao; i++){
         posicao_melhor_individuo = tipoDeOrdenacao(populacao, i, tamanho_populacao, variavel);
+
         //ordena vetor indivíduos
         trocarIndividuos(&(populacao[posicao_melhor_individuo]), &(populacao[i]));
+
         //ordenar vetor float
         trocarFloats(&(vetor[i-inicio]), &(vetor[posicao_melhor_individuo - inicio]));
     }
@@ -269,9 +270,9 @@ void calcularGrauDeDominanciaDosIndividuos(Individuo *populacao, int tamanho_pop
     int dominancia;
 
     for (int i = 0; i < tamanho_populacao; i++){
-        if (populacao[i].variaveis[0] < 30){
+        if (populacao[i].variaveis[1] != 0){
             for (int j = i + 1; j < tamanho_populacao; j++){
-                if (populacao[j].variaveis[0] < 30){
+                if (populacao[j].variaveis[1] != 0){
                     dominancia = verificarDominanciaEntreIndividuos(populacao[i], populacao[j], min_or_max);
                     if (dominancia == 1){
                         populacao[j].grau_de_dominancia++;
@@ -286,7 +287,15 @@ void calcularGrauDeDominanciaDosIndividuos(Individuo *populacao, int tamanho_pop
             populacao[i].grau_de_dominancia = tamanho_populacao;
         }
     }
-    selectionSort(populacao, 0, tamanho_populacao, buscarIndividuoMenorDominancia);
+
+    
+    for (int i = 0; i < tamanho_populacao; i++){
+        if (populacao[i].variaveis[0] > 30){
+            populacao[i].grau_de_dominancia++;
+        }
+    }
+
+    ordenarPorMenorDominancia(populacao, 0, tamanho_populacao);
 }
 
 Individuo *alocarPopulacao(int tamanho){
@@ -312,11 +321,11 @@ int verificarIgualdadeGenetica(Individuo individuo1,Individuo individuo2){
 
 void zerarIndividuosRepetidos(Individuo *populacao, int tamanho_populacao){
     for (int i = 0; i < tamanho_populacao; i++){
-        if (populacao[i].variaveis[0] < 30){
+        if (populacao[i].variaveis[1] != 0){
             for (int j = i + 1; j < tamanho_populacao; j++){
                 if (verificarVariaveisIguais(populacao[i], populacao[j])){
                     if (verificarIgualdadeGenetica(populacao[i], populacao[j]))
-                        populacao[j].variaveis[0] = 31;
+                        populacao[j].variaveis[1] = 0;
                 }                                  
             }
         }
@@ -385,8 +394,8 @@ void estrategiaPhiLambda(Individuo *populacao, int tamanho_populacao, int *min_o
         float distancia_maxima = (populacao[final_ultima_frente-1].variaveis[i] - populacao[inicio_ultima_frente].variaveis[i]);
         
         distancias_individuos[j++] = populacao[inicio_ultima_frente + 1].variaveis[i]/distancia_maxima;
-        for (int i = inicio_ultima_frente + 1; i < final_ultima_frente - 1; i++){
-            distancias_individuos[j++] = (populacao[i + 1].variaveis[i] - populacao[i - 1].variaveis[i])/distancia_maxima;
+        for (int k = inicio_ultima_frente + 1; k < final_ultima_frente - 1; k++){
+            distancias_individuos[j++] = (populacao[k + 1].variaveis[i] - populacao[k - 1].variaveis[i])/distancia_maxima;
         }
         distancias_individuos[j] = populacao[inicio_ultima_frente - 1].variaveis[i]/distancia_maxima;
     }
@@ -406,13 +415,13 @@ int metodoDeBorda(Individuo* populacao, int tamanho_populacao, int *min_or_max_b
     }
 
     for (int i = 0; i < qtde_variaveis; i++){
-        if (min_or_max_borda){
+        if (min_or_max_borda[i]){
             ordenarVetorFloatJuntoComPopulacao(populacao, 0, fim_da_frente, notas_individuos, i, buscarIndividuoMaiorVariavel);
         } else {
             ordenarVetorFloatJuntoComPopulacao(populacao, 0, fim_da_frente, notas_individuos, i, buscarIndividuoMenorVariavel);
         }
-        for (int j = 1; j <= fim_da_frente; j++){
-            notas_individuos[j] += j;
+        for (int j = 0; j < fim_da_frente; j++){
+            notas_individuos[j] += j + 1;
         }
     }
     
@@ -438,10 +447,10 @@ int main(){
     min_or_max[0] = 1; min_or_max[1] = 1; min_or_max[2] = 0;
 
     int min_or_max_borda[3];
-    min_or_max_borda[0] = 0; min_or_max_borda[1] = 1; min_or_max_borda[2] = 0;
+    min_or_max_borda[0] = 1; min_or_max_borda[1] = 1; min_or_max_borda[2] = 0;
 
     //gerando a primeira população de pais aleatória
-    int tamanho_populacao = 1000;
+    int tamanho_populacao = 500;
     populacao = alocarPopulacao(2 * tamanho_populacao);
     gerarPopulacaoAleatoria(populacao, 0, tamanho_populacao, lista_de_itens);
     calcularGrauDeDominanciaDosIndividuos(populacao, tamanho_populacao, min_or_max);
@@ -461,7 +470,7 @@ int main(){
             pai1 = selecaoPorTorneio(populacao, tamanho_populacao); //selecao
             pai2 = selecaoPorTorneio(populacao, tamanho_populacao); //selecao
             
-            if (gerarAleatorio(0,1000) < taxa_de_cruzamento){           //cruzamento
+            if (gerarAleatorio(0,1000) < taxa_de_cruzamento){       //cruzamento
                 crossoverUniforme(populacao[pai1], populacao[pai2], &(populacao[j]), &(populacao[j+1]));
                 
                 if(gerarAleatorio(0,1000) < probabilidade_mutacao){ //mutação
