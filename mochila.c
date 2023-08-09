@@ -225,20 +225,20 @@ int verificarVariaveisIguais(Individuo individuo1, Individuo individuo2){
 
 int compararMinOrMax(Individuo individuo1, Individuo individuo2, int min_or_max, int variavel){
 
-    if (min_or_max){
+    if (min_or_max){ // maximixar esta variavel
         if (individuo1.variaveis[variavel] > individuo2.variaveis[variavel]){
-            return 1;
+            return 1; // variavel do indivíduo 1 é melhor
         } else if (individuo2.variaveis[variavel] > individuo1.variaveis[variavel]){
-            return -1;
+            return -1; // variavel do indivíduo 2 é melhor
         }
-    } else {
+    } else { // minimizar esta varivel
         if (individuo1.variaveis[variavel] < individuo2.variaveis[variavel]){
-            return 1;
+            return 1; // variavel do indivíduo 1 é melhor
         } else if (individuo2.variaveis[variavel] < individuo1.variaveis[variavel]){
-            return -1;
+            return -1; // variavel do indivíduo 2 é melhor
         }
     }
-    return 0;
+    return 0; // a variavel é igual nos dois
 }
 
 int verificarDominanciaEntreIndividuos(Individuo individuo1, Individuo individuo2, int *min_or_max){
@@ -248,17 +248,17 @@ int verificarDominanciaEntreIndividuos(Individuo individuo1, Individuo individuo
     do{
         dominante = compararMinOrMax(individuo1, individuo2, min_or_max[i], i);
         i++;
-    } while (!dominante); 
-
+    } while (!dominante);  // enquanto estiver retornando 0
+    // sair do while o dominante vai ser igual a 1 ou -1
     int valor;
 
     for (i; i < qtde_variaveis; i++){
-        valor = compararMinOrMax(individuo1, individuo2, min_or_max[i], i);
-        if (valor != 0 && valor != dominante){
-            return 0;
+        valor = compararMinOrMax(individuo1, individuo2, min_or_max[i], i); // vai testando as outras variáveis
+        if (valor != 0 && valor != dominante){ 
+            return 0; // se der um valor diferente de 0 e diferente do dominante ninguem domina ninguem
         }
     }
-    return dominante;
+    return dominante; // dominante retorna 1 então o indivíduo 1 é melhor, retorna -1 o indivíduo 2 é melhor
 }
 
 void calcularGrauDeDominanciaDosIndividuos(Individuo *populacao, int tamanho_populacao, int *min_or_max){
@@ -272,25 +272,25 @@ void calcularGrauDeDominanciaDosIndividuos(Individuo *populacao, int tamanho_pop
     for (int i = 0; i < tamanho_populacao; i++){
         if (populacao[i].variaveis[1] != 0){
             for (int j = i + 1; j < tamanho_populacao; j++){
-                if (populacao[j].variaveis[1] != 0){
+                if (populacao[j].variaveis[1] != 0){ 
                     dominancia = verificarDominanciaEntreIndividuos(populacao[i], populacao[j], min_or_max);
-                    if (dominancia == 1){
+                    if (dominancia == 1){           // individuo i domina j
                         populacao[j].grau_de_dominancia++;
-                    } else if (dominancia == -1){
+                    } else if (dominancia == -1){   // individuo j domina i
                         populacao[i].grau_de_dominancia++;
                     }
-                } else {
+                } else { // repetidos e zerados são dominados
                     populacao[j].grau_de_dominancia = tamanho_populacao;
                 }
             }
-        } else {
+        } else { // repetidos e zerados são dominados
             populacao[i].grau_de_dominancia = tamanho_populacao;
         }
     }
 
     
     for (int i = 0; i < tamanho_populacao; i++){
-        if (populacao[i].variaveis[0] > 30){
+        if (populacao[i].variaveis[0] > 30){ // aumenta 1 grau de dominancia em todos os indivíduos com mais de 30 de peso
             populacao[i].grau_de_dominancia++;
         }
     }
@@ -388,7 +388,7 @@ void estrategiaPhiLambda(Individuo *populacao, int tamanho_populacao, int *min_o
         distancias_individuos[i] = 0;
     }
     
-    for (int i = 0; i < qtde_variaveis; i++){
+    for (int i = 0; i < qtde_variaveis; i++){ // calculo distancia de aglomeração
         ordenarVetorFloatJuntoComPopulacao(populacao, inicio_ultima_frente, final_ultima_frente, distancias_individuos, i, buscarIndividuoMenorVariavel);
         j = 0;
         float distancia_maxima = (populacao[final_ultima_frente-1].variaveis[i] - populacao[inicio_ultima_frente].variaveis[i]);
@@ -415,10 +415,10 @@ int metodoDeBorda(Individuo* populacao, int tamanho_populacao, int *min_or_max_b
     }
 
     for (int i = 0; i < qtde_variaveis; i++){
-        if (min_or_max_borda[i]){
-            ordenarVetorFloatJuntoComPopulacao(populacao, 0, fim_da_frente, notas_individuos, i, buscarIndividuoMaiorVariavel);
-        } else {
-            ordenarVetorFloatJuntoComPopulacao(populacao, 0, fim_da_frente, notas_individuos, i, buscarIndividuoMenorVariavel);
+        if (min_or_max_borda[i]){ // maximizar
+            ordenarVetorFloatJuntoComPopulacao(populacao, 0, fim_da_frente, notas_individuos, i, buscarIndividuoMaiorVariavel); // ordena decrescente
+        } else { // minimizar
+            ordenarVetorFloatJuntoComPopulacao(populacao, 0, fim_da_frente, notas_individuos, i, buscarIndividuoMenorVariavel); // ordena crescente
         }
         for (int j = 0; j < fim_da_frente; j++){
             notas_individuos[j] += j + 1;
@@ -426,7 +426,6 @@ int metodoDeBorda(Individuo* populacao, int tamanho_populacao, int *min_or_max_b
     }
     
     int indice_melhor_individuo = buscarMenorNumeroVetorFloat(0, fim_da_frente, notas_individuos);
-
     return indice_melhor_individuo;
 }
 
@@ -443,11 +442,11 @@ int main(){
 
     Individuo *populacao;
 
-    int min_or_max[3];
+    int min_or_max[3]; // maximizar peso e utilidade e minimizar preço no algoritmo
     min_or_max[0] = 1; min_or_max[1] = 1; min_or_max[2] = 0;
 
-    int min_or_max_borda[3];
-    min_or_max_borda[0] = 1; min_or_max_borda[1] = 1; min_or_max_borda[2] = 0;
+    int min_or_max_borda[3]; // minimizar peso e preço e maximar utilidade no método de borda
+    min_or_max_borda[0] = 0; min_or_max_borda[1] = 1; min_or_max_borda[2] = 0;
 
     //gerando a primeira população de pais aleatória
     int tamanho_populacao = 500;
